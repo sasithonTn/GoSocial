@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const quest_timeSchema = new Schema({
-    id : String,
+    _id : String,
     user_id : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'accounts'
