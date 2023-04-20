@@ -2,19 +2,21 @@ const mongodb = require('mongoose');
 const User_objects = mongodb.model('user_objects');
 
 module.exports = app =>{
-    app.get('userObj/:user_id', async (req, res)=>{
+    app.get('/userObj/:user_id', async (req, res) => {
         try {
-            const userObj_= await User_objects.findById(req.params.user_id);
-            if (userObj_){
-                res.json(userObj_);
-            }else{
-                res.sendStatus(404);
-            }
-        } catch(err) {
-            console.error(err);
-            res.status(500);
+          const userObjs = await User_objects.find({ user_id: req.params.user_id });
+          if (userObjs.length > 0) {
+            res.json(userObjs);
+          } else {
+            res.sendStatus(404);
+          }
+        } catch (err) {
+          console.error(err);
+          res.sendStatus(500);
         }
-    });
+      });
+      
+      
 
     app.post('/userObj', async (req, res)=>{
         const {user_id, object_id, used} = req.query;
@@ -64,7 +66,7 @@ module.exports = app =>{
 
       
 
-    /*app.delete('/userObj/:id', async (req, res) => {
+    app.delete('/userObj/:id', async (req, res) => {
         try{
             const delUserObj = await User_objects.findByIdAndDelete(req.params.id);
             if(delUserObj){
@@ -76,5 +78,5 @@ module.exports = app =>{
             console.error(err);
             res.sendStatus(500);
         }
-    });*/
+    });
 }
