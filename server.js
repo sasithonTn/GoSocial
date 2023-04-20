@@ -25,6 +25,10 @@ require('./model/quest.js')
 require('./routes/authenticationRoutes.js')(app);
 require('./routes/objectRoutes.js')(app);
 //require('./routes/userObjRoutes.js')(app);
+require('./routes/focus_timeRoutes.js')(app);
+require('./routes/tag_Routes.js')(app);
+require('./routes/quest_Routes.js')(app);
+require('./routes/quest_timeRoutes.js')(app);
 
 app.listen(3000, ()=>{
     console.log("listenind on 3000");
