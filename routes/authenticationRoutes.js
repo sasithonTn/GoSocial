@@ -4,7 +4,7 @@ const Account = mongoose.model('accounts');
 const argon2i = require('argon2-ffi').argon2i;
 const crypto = require('crypto');
 
-const passwordRegex = new RegExp("(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,24})")
+const passwordRegex = new RegExp("(?=.*[a-z])(?=.*[0-9])(?=.{8,24})")
 const emailRegex = new RegExp(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
 module.exports = app => {
     //routes
@@ -30,7 +30,7 @@ module.exports = app => {
 
                     response.code = 0;
                     response.msg = "Account found"
-                    response.data = ( ({email}) => ({ email}) )(userAccount);
+                    response.data = ( ({email, _id, username}) => ({ email, _id, username}) )(userAccount);
                     res.send(response);
                     return;
                 }else{
@@ -110,5 +110,20 @@ module.exports = app => {
             res.send(response);
         }
         return; 
+    });
+
+    app.get('/account/:_id', async(req, res) =>{
+        try {
+            const account = await Account.findOne({_id: req.params._id});;
+            if (account ) {
+              res.json({username : account.username});
+              
+            } else {
+              res.sendStatus(404);
+            }
+          } catch (err) {
+            console.error(err);
+            res.sendStatus(500);
+          }
     });
 }
