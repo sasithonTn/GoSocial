@@ -9,47 +9,48 @@ const emailRegex = new RegExp(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
 module.exports = app => {
     //routes
     app.post('/account/login', async (req, res)=>{
-
         var response = {};
-
-        const { remail, rpassword} = req.body;
-        if(remail == null || !passwordRegex.test(rpassword)){
-
+    
+        const { remail, rpassword } = req.body;
+        if (remail == null || !passwordRegex.test(rpassword)) {
             response.code = 1;
-            response.msg = "Invalid credentails"
+            response.msg = "Invalid credentials";
             res.send(response);
             return;
         }
-
-        var userAccount = await Account.findOne({email: remail}, 'email password');
-        if(userAccount != null){
+    
+        var userAccount = await Account.findOne({ email: remail }, 'email password username');
+        if (userAccount != null) {
             argon2i.verify(userAccount.password, rpassword).then(async (success) => {
-                if(success){
+                if (success) {
                     userAccount.lastAuthentication = Date.now();
                     await userAccount.save();
-
+    
                     response.code = 0;
-                    response.msg = "Account found"
-                    response.data = ( ({email, _id, username}) => ({ email, _id, username}) )(userAccount);
+                    response.msg = "Account found";
+                    response.data = {
+                        email: userAccount.email,
+                        _id: userAccount._id,
+                        username: userAccount.username
+                    };
+    
                     res.send(response);
                     return;
-                }else{
+                } else {
                     response.code = 1;
-                    response.msg = "Invalid credentails"
+                    response.msg = "Invalid credentials";
                     res.send(response);
-                    return; 
+                    return;
                 }
-                
             });
-        }else{
+        } else {
             response.code = 1;
-            response.msg = "Invalid credentails"
+            response.msg = "Invalid credentials";
             res.send(response);
             return;
         }
-          
-
-    });   
+    });
+    
     
     app.post("/account/create", async (req, res)=>{
 
@@ -112,7 +113,7 @@ module.exports = app => {
         return; 
     });
 
-    app.get('/account/:_id', async(req, res) =>{
+    /*app.get('/account/:_id', async(req, res) =>{
         try {
             const account = await Account.findOne({_id: req.params._id});;
             if (account ) {
@@ -125,5 +126,5 @@ module.exports = app => {
             console.error(err);
             res.sendStatus(500);
           }
-    });
+    });*/
 }
