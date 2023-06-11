@@ -4,22 +4,22 @@ const Account = mongoose.model('accounts');
 const argon2i = require('argon2-ffi').argon2i;
 const crypto = require('crypto');
 
-const passwordRegex = new RegExp("(?=.*[a-z])(?=.*[0-9])(?=.{8,24})")
-const emailRegex = new RegExp(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+const passwordRegex = new RegExp("(?=.*[a-z])(?=.*[0-9])(?=.{8,24})");
+const usernameRegex = new RegExp(/^(?=.*[a-zA-Z])(?=.*\d).{8}$/);
 module.exports = app => {
     //routes
     app.post('/account/login', async (req, res)=>{
         var response = {};
     
-        const { remail, rpassword } = req.body;
-        if (remail == null || !passwordRegex.test(rpassword)) {
+        const { rusername, rpassword } = req.body;
+        if (rusername == null || !passwordRegex.test(rpassword)) {
             response.code = 1;
             response.msg = "Invalid credentials";
             res.send(response);
             return;
         }
     
-        var userAccount = await Account.findOne({ email: remail }, 'email password username');
+        var userAccount = await Account.findOne({ username: rusername }, 'username password username');
         if (userAccount != null) {
             argon2i.verify(userAccount.password, rpassword).then(async (success) => {
                 if (success) {
@@ -29,7 +29,7 @@ module.exports = app => {
                     response.code = 0;
                     response.msg = "Account found";
                     response.data = {
-                        email: userAccount.email,
+                        username: userAccount.username,
                         _id: userAccount._id,
                         username: userAccount.username
                     };
@@ -56,8 +56,8 @@ module.exports = app => {
 
         var response = {};
 
-        const { remail, rpassword} = req.body;
-        if(remail == null || !emailRegex.test(remail)){
+        const { rusername, rpassword} = req.body;
+        if(rusername == null || !usernameRegex.test(rusername)){
             response.code = 1;
             response.msg = "Invalid credentails"
             res.send(response);
@@ -71,14 +71,14 @@ module.exports = app => {
             return;
         }
 
-        if(!emailRegex.test(remail)){
+        if(!usernameRegex.test(rusername)){
             response.code = 4;
-            response.msg = "Invalid email format"
+            response.msg = "Invalid username format"
             res.send(response);
             return;
         }
 
-        var userAccount = await Account.findOne({email: remail},'_id');
+        var userAccount = await Account.findOne({username: rusername},'_id');
         if(userAccount == null){
             console.log('Creatr new account...'); 
             
@@ -90,7 +90,7 @@ module.exports = app => {
 
                  argon2i.hash(rpassword, salt).then(async (hash) =>{
                     var newAccount = new Account({
-                        email : remail,
+                        username : rusername,
                         password : hash,
                         salt: salt,
         
@@ -100,31 +100,16 @@ module.exports = app => {
 
                     response.code = 0;
                     response.msg = "Account found"
-                    response.data = ( ({email}) => ({ email}) )(newAccount);
+                    response.data = ( ({username}) => ({ username}) )(newAccount);
                     res.send(response);
                     return;
                 });
             });
         } else{
             response.code = 2;
-            response.msg = "Email is already taken"
+            response.msg = "username is already taken"
             res.send(response);
         }
         return; 
     });
-
-    /*app.get('/account/:_id', async(req, res) =>{
-        try {
-            const account = await Account.findOne({_id: req.params._id});;
-            if (account ) {
-              res.json({username : account.username});
-              
-            } else {
-              res.sendStatus(404);
-            }
-          } catch (err) {
-            console.error(err);
-            res.sendStatus(500);
-          }
-    });*/
 }
