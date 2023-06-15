@@ -17,10 +17,6 @@ const focus_timeSchema = new Schema({
         type: String,
         required: true
     },
-    focus_time_status: {
-        type: Boolean,
-        required: true
-    },
 
     lastAuthentication: Date,
     

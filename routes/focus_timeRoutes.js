@@ -69,13 +69,12 @@ module.exports = app => {
 
   app.post('/focusTime', async (req, res) => {
     try {
-      const { user_id, tag_id, time_set, focus_time_status } = req.body;
+      const { user_id, tag_id, time_set, } = req.body;
 
       const newFocusTime = new FocusTime({
         user_id,
         tag_id,
         time_set,
-        focus_time_status: focus_time_status === 'True',
         lastAuthentication: Date.now()
       });
 
