@@ -31,6 +31,6 @@ require('./routes/contentBaseFiltering.js')(app);
 require('./routes/score_Routes.js')(app);
 
 const port = process.env.PORT || 3000; // ใช้พอร์ตที่ให้มาจาก Heroku หรือใช้พอร์ต 3000 ถ้าไม่ได้กำหนด
-app.listen(port, () => {
-    console.log(`Listening on port ${port}`);
+app.listen(process.env.PORT || 3000, function(){
+    console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
 });
