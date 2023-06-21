@@ -29,6 +29,8 @@ require('./routes/user_interestRoutes.js')(app);
 require('./routes/user_itemRoutes.js')(app);
 require('./routes/contentBaseFiltering.js')(app);
 require('./routes/score_Routes.js')(app);
-app.listen(3000, ()=>{
-    console.log("listenind on 3000");
+
+const port = process.env.PORT || 3000; // ใช้พอร์ตที่ให้มาจาก Heroku หรือใช้พอร์ต 3000 ถ้าไม่ได้กำหนด
+app.listen(port, () => {
+    console.log(`Listening on port ${port}`);
 });
