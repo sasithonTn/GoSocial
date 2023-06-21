@@ -1,56 +1,6 @@
 const mongoose = require('mongoose');
 const FocusTime = mongoose.model('focus_times');
-
-function formatDate(date) {
-  const options = { day: '2-digit', month: '2-digit', year: '2-digit' };
-  formattedDate = new Date(date).toLocaleDateString('en-US', options);
-  return formattedDate;
-}
-
-function getDayOfWeek(date) {
-  const dateOfWeek = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
-  const dayOfWeek = new Date(date).getDay();
-  return dateOfWeek[dayOfWeek];
-}
-
-function getWeekNumber(date) {
-  const firstDayOfWeek = new Date(date.getFullYear(), 0, 1);
-  const dayOfYear = Math.floor((date - firstDayOfWeek) / 86400000);
-  const weekNumber = Math.ceil((dayOfYear + firstDayOfWeek.getDay() + 1) / 7);
-  return weekNumber;
-}
-
-function processJSONData(json) {
-  const processedData = {};
-
-  const currentDate = new Date();
-  const lastWeekDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 7);
-  
-  json.forEach((data) => {
-
-    const dateStr = data.lastAuthentication;
-    const focosTimeDate = new Date(dateStr);
-    
-
-    if(focosTimeDate >= lastWeekDate){
-      const formattedDateTime = formatDate(dateStr);
-      const dayOfWeek = getDayOfWeek(dateStr);
-      const weekNumber = getWeekNumber(dateStr);
-
-      if (!processedData[formattedDateTime]) {
-        processedData[formattedDateTime] = {
-          date: formattedDateTime,
-          dayOfWeek: dayOfWeek,
-          weekNumber: weekNumber,
-          totalFocusTime: 0
-        };
-      }
-      processedData[formattedDateTime].totalFocusTime += parseInt(data.time_set);
-    }        
-  });
-
-  return Object.values(processedData);
-}
+const Tag = mongoose.model('tag');
 
 module.exports = app => {
   app.get('/focusTime/:user_id', async (req, res) => {
@@ -96,18 +46,38 @@ module.exports = app => {
     }
   });
 
-  app.get("/calFocusTime/:user_id", async (req, res) => {
+  app.get('/calTagfocusTime/:user_id', async (req, res) => {
+    const userId = req.params.user_id;
+  
     try {
-      const focusTime = await FocusTime.find({ user_id: req.params.user_id });
-      if (focusTime) {
-        const processedData = processJSONData(focusTime);
-        res.json(processedData);
-      } else {
-        res.sendStatus(404);
+      // ดึงแท็กทั้งหมดจากฐานข้อมูล
+      const allTags = await Tag.find();
+      console.log(allTags);
+      // ดึงเวลาของแต่ละแท็กสำหรับผู้ใช้
+      const userTimes = await FocusTime.find({ user_id: userId });
+      
+      const tagTimes = [];
+  
+      for (const tag of allTags) {
+        let totalTime = 0;
+        
+        for (const time of userTimes) {
+          console.log("timeTag:"+time.tag_id+" tag"+tag._id);
+          if (tag._id.toString() == time.tag_id) {
+            totalTime += Number(time.time_set);
+          }
+        }
+        tagTimes.push({
+          tag: tag.name,
+          time: totalTime
+        });
       }
-    } catch (err) {
-      console.error(err);
-      res.sendStatus(500);
+  
+      res.json(tagTimes);
+    } catch (error) {
+      console.log('เกิดข้อผิดพลาดในการดึงข้อมูลแท็กหรือเวลา:', error);
+      res.status(500).json({ error: 'เกิดข้อผิดพลาดในการดึงข้อมูลแท็กหรือเวลา' });
     }
   });
+  
 };

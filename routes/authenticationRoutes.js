@@ -5,7 +5,7 @@ const argon2i = require('argon2-ffi').argon2i;
 const crypto = require('crypto');
 
 const passwordRegex = new RegExp("(?=.*[a-z])(?=.*[0-9])(?=.{8,24})");
-const usernameRegex = new RegExp(/^(?=.*[a-zA-Z])(?=.*\d).{8}$/);
+const usernameRegex = new RegExp(/^(?=.*[a-zA-Z]).{8,}$/);
 module.exports = app => {
     //routes
     app.post('/account/login', async (req, res)=>{
